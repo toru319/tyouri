@@ -1,67 +1,45 @@
+// レシピデータ（実際にはサーバーから取得します）
 const recipes = [
-    {
-        name: "トマトパスタ",
-        ingredients: [
-            { name: "パスタ", amount: 100, unit: "g" },
-            { name: "トマト", amount: 1, unit: "個" },
-            { name: "オリーブオイル", amount: 1, unit: "大さじ" },
-            { name: "にんにく", amount: 1, unit: "片" },
-            { name: "塩", amount: 1, unit: "小さじ" },
-        ],
-        instructions: "1. パスタを茹でる\n2. フライパンでにんにくとオリーブオイルを熱する\n3. トマトを加えて炒める\n4. 茹でたパスタを加えて塩で味を調える"
-    },
-    // 他のレシピを追加...
+    { id: 1, name: '卵サンドウィッチ', image: 'tomato-pasta.jpg', ingredients: ['食パン', '卵', 'マヨネーズ', '塩コショウ'] },
+    { id: 2, name: 'ハムチーズサンドウィッチ', image: 'stir-fry.jpg', ingredients: ['食パン', 'ハム', 'チーズ', 'マーガリン'] },
+    { id: 3, name: 'ネギ塩豚丼', image: 'stir-fry.jpg', ingredients: ['米', '水', '豚', '長ネギ', 'にんじん', 'ごま油', '酒', '鶏がらスープの素', '塩'] },
+    { id: 4, name: 'ワカメスープ', image: 'stir-fry.jpg', ingredients: ['水', 'わかめ', '鶏がらスープの素', '白ごま', '塩', '醤油', 'ごま油'] },
+    { id: 5, name: 'お茶漬け', image: 'stir-fry.jpg', ingredients: ['米', '水', '鮭フレーク', '昆布だし', 'のり', '青ネギ'] },
+    { id: 6, name: 'おにぎり（チュモッパ）', image: 'stir-fry.jpg', ingredients: ['米', '大葉', '水', 'たくあん', 'のり', '塩ごま', 'ごま油', 'マヨネーズ'] },
+    // 他のレシピ...
 ];
 
-function renderRecipes(filteredRecipes = recipes) {
-    const recipeList = document.getElementById('recipeList');
-    recipeList.innerHTML = '';
-    
-    filteredRecipes.forEach(recipe => {
-        const card = document.createElement('div');
-        card.className = 'bg-white rounded-lg shadow-md p-6';
-        card.innerHTML = `
-            <h2 class="text-2xl font-bold text-orange-600 mb-4">${recipe.name}</h2>
-            <h3 class="text-lg font-semibold text-orange-500 mb-2">材料：</h3>
-            <ul class="mb-4">
-                ${recipe.ingredients.map(ing => `
-                    <li>
-                        <span class="ingredient-name">${ing.name}</span>: 
-                        <span class="ingredient-amount">${ing.amount}</span>
-                        <span class="ingredient-unit">${ing.unit}</span>
-                    </li>
-                `).join('')}
-            </ul>
-            <h3 class="text-lg font-semibold text-orange-500 mb-2">作り方：</h3>
-            <p class="whitespace-pre-line">${recipe.instructions}</p>
-        `;
-        recipeList.appendChild(card);
-    });
+// レシピカードを生成する関数
+function createRecipeCard(recipe) {
+    return `
+        <div class="col-md-4 mb-4">
+            <div class="card" data-recipe-id="${recipe.id}">
+                <img src="${recipe.image}" class="card-img-top" alt="${recipe.name}">
+                <div class="card-body">
+                    <h5 class="card-title">${recipe.name}</h5>
+                    <a href="recipe.html?id=${recipe.id}" class="btn btn-primary">詳細を見る</a>
+                </div>
+            </div>
+        </div>
+    `;
 }
 
-function filterRecipes() {
-    const searchTerm = document.getElementById('ingredientSearch').value.toLowerCase();
+// レシピカードを表示
+const recipeCardsContainer = document.getElementById('recipeCards');
+recipes.forEach(recipe => {
+    recipeCardsContainer.innerHTML += createRecipeCard(recipe);
+});
+
+// 検索機能
+const searchInput = document.getElementById('searchInput');
+searchInput.addEventListener('input', () => {
+    const searchTerm = searchInput.value.toLowerCase();
     const filteredRecipes = recipes.filter(recipe => 
-        recipe.ingredients.some(ing => ing.name.toLowerCase().includes(searchTerm))
+        recipe.name.toLowerCase().includes(searchTerm) ||
+        recipe.ingredients.some(ingredient => ingredient.toLowerCase().includes(searchTerm))
     );
-    renderRecipes(filteredRecipes);
-}
-
-function updateServings() {
-    const servings = parseInt(document.getElementById('servings').value);
-    document.querySelectorAll('.ingredient-amount').forEach(el => {
-        const originalAmount = parseFloat(el.getAttribute('data-original-amount') || el.textContent);
-        el.textContent = (originalAmount * servings).toFixed(2);
+    recipeCardsContainer.innerHTML = '';
+    filteredRecipes.forEach(recipe => {
+        recipeCardsContainer.innerHTML += createRecipeCard(recipe);
     });
-}
-
-document.getElementById('ingredientSearch').addEventListener('input', filterRecipes);
-document.getElementById('servings').addEventListener('input', updateServings);
-
-// 初期表示
-renderRecipes();
-
-// オリジナルの分量を保存
-document.querySelectorAll('.ingredient-amount').forEach(el => {
-    el.setAttribute('data-original-amount', el.textContent);
 });
